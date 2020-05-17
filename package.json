@@ -1,0 +1,19 @@
+{
+  "name": "yargled",
+  "version": "1.0.0",
+  "description": "Tower Defense",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emnh/yargled-js.git"
+  },
+  "author": "Eivind Magnus Hvidevold <hvidevold@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/emnh/yargled-js/issues"
+  },
+  "homepage": "https://github.com/emnh/yargled-js#readme"
+}

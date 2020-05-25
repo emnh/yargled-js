@@ -1,6 +1,55 @@
 import * as PIXI from 'pixi.js';
 const $ = require('jquery');
 
+function getVars(state) {
+  const tileWidth = 64;
+  const tileHeight = 64;
+
+  state.tilesX = 20;
+  state.tilesY = 20;
+
+  const size = Math.min(state.width, state.height) - 4 * tileWidth;
+  state.mapWidth = size;
+  state.mapHeight = size;
+
+  const scaleX = size / (tileWidth * state.tilesX);
+  const scaleY = scaleX;
+
+  state.tileWidth = tileWidth;
+  state.tileHeight = tileHeight;
+  state.scaleX = scaleX;
+  state.scaleY = scaleY;
+}
+
+function getClasses(state) {
+  const placeholder = new PIXI.Graphics();
+  placeholder.lineStyle(2, 0x000000, 1);
+  placeholder.beginFill(0xFFFFFF);
+  placeholder.drawRect(0, 0, state.tileWidth * state.scaleX * 0.5, state.tileHeight * state.scaleY * 0.1);
+  placeholder.endFill();
+
+  const Creep = function() {
+    this.sprite = placeholder;
+    this.health = 0;
+    this.damage = 0;
+    this.range = 0;
+    this.delay = 0;
+  };
+
+  const Tower = function() {
+    this.sprite = placeholder;
+    this.health = 0;
+    this.damage = 0;
+    this.range = 0;
+    this.delay = 0;
+  };
+
+  state.classes = {
+    Creep: Creep,
+    Tower: Tower
+  };
+}
+
 function addTerrain(state, x, y, texture) {
   const sprite = new PIXI.Sprite(texture);
   sprite.scale.x = state.scaleX;
@@ -50,44 +99,25 @@ function drawTerrain(state) {
     PIXI.Texture.from('resources/images/kenney-td/towerDefense_tile137.png')
   ];
 
-  const tileWidth = 64;
-  const tileHeight = 64;
 
-  const tilesX = 20;
-  const tilesY = 20;
-  state.tilesX = tilesX;
-  state.tilesY = tilesY;
-
-  const size = Math.min(state.width, state.height) - 4 * tileWidth;
-  state.mapWidth = size;
-  state.mapHeight = size;
-
-  const scaleX = size / (tileWidth * tilesX);
-  const scaleY = scaleX;
-
-  state.tileWidth = tileWidth;
-  state.tileHeight = tileHeight;
-  state.scaleX = scaleX;
-  state.scaleY = scaleY;
-
-  for (let x = 0; x < tilesX; x++) {
-    for (let y = 0; y < tilesY; y++) {
+  for (let x = 0; x < state.tilesX; x++) {
+    for (let y = 0; y < state.tilesY; y++) {
       addTerrain(state, x, y, grassTexture);
     }
   }
 
-  for (let x = 0; x < tilesX; x++) {
-      addTerrain(state, x, tilesY / 2 - 1, dirtTextureSouth);
-      addTerrain(state, x, tilesY / 2, dirtTexture);
-      addTerrain(state, x, tilesY / 2 + 1, dirtTextureNorth);
+  for (let x = 0; x < state.tilesX; x++) {
+      addTerrain(state, x, state.tilesY / 2 - 1, dirtTextureSouth);
+      addTerrain(state, x, state.tilesY / 2, dirtTexture);
+      addTerrain(state, x, state.tilesY / 2 + 1, dirtTextureNorth);
   }
 
   for (let i = 0; i < 2; i++) {
-    for (let x = 0; x < tilesX; x++) {
-      for (let y = 0; y < tilesY; y++) {
-        const x2 = Math.floor(Math.random() * tilesX);
-        const y2 = Math.floor(Math.random() * tilesY);
-        if (x2 == 0 || y2 == 0 || (x2 == tilesX - 1) || (y2 == tilesY - 1) || Math.abs(y2 - tilesY / 2) <= 1) {
+    for (let x = 0; x < state.tilesX; x++) {
+      for (let y = 0; y < state.tilesY; y++) {
+        const x2 = Math.floor(Math.random() * state.tilesX);
+        const y2 = Math.floor(Math.random() * state.tilesY);
+        if (x2 == 0 || y2 == 0 || (x2 == state.tilesX - 1) || (y2 == state.tilesY - 1) || Math.abs(y2 - state.tilesY / 2) <= 1) {
           continue;
         }
         if (x2 % 2 == 1 || y2 % 2 == 1) {
@@ -117,29 +147,29 @@ function drawTerrain(state) {
 
   state.towers = [];
   state.creeps = [];
-  for (let x = 0; x < tilesX; x++) {
-      addTerrain(state, x, tilesY / 2 - 1, towerBase);
-      addTerrain(state, x, tilesY / 2 + 1, towerBase);
-      const t1 = addTerrain(state, x, tilesY / 2 - 1, tower);
+  for (let x = 0; x < state.tilesX; x++) {
+      addTerrain(state, x, state.tilesY / 2 - 1, towerBase);
+      addTerrain(state, x, state.tilesY / 2 + 1, towerBase);
+      const t1 = addTerrain(state, x, state.tilesY / 2 - 1, tower);
       t1.pivot.x = state.tileWidth * 0.5;
       t1.pivot.y = t1.pivot.x;
-      t1.x += t1.pivot.x * scaleX;
-      t1.y += t1.pivot.y * scaleY;
+      t1.x += t1.pivot.x * state.scaleX;
+      t1.y += t1.pivot.y * state.scaleY;
       t1.rotation = Math.random() * Math.PI * 2.0;
       t1.rockets = [];
-      const t2 = addTerrain(state, x, tilesY / 2 + 1, tower);
+      const t2 = addTerrain(state, x, state.tilesY / 2 + 1, tower);
       t2.pivot.x = t1.pivot.x;
       t2.pivot.y = t1.pivot.x;
-      t2.x += t2.pivot.x * scaleX;
-      t2.y += t2.pivot.y * scaleY;
+      t2.x += t2.pivot.x * state.scaleX;
+      t2.y += t2.pivot.y * state.scaleY;
       t2.rotation = Math.random() * Math.PI * 2.0;
       state.towers.push(t1);
       state.towers.push(t2);
       t2.rockets = [];
   }
-  for (let x = 0; x < tilesX; x++) {
+  for (let x = 0; x < state.tilesX; x++) {
       const manContainer = new PIXI.Container();
-      const man = addTerrain(state, -x, tilesY / 2, manTexture);
+      const man = addTerrain(state, -x, state.tilesY / 2, manTexture);
       man.parent.removeChild(man);
       man.pivot.x = state.tileWidth * 0.5;
       man.pivot.y = man.pivot.x;
@@ -147,16 +177,16 @@ function drawTerrain(state) {
       manContainer.y = man.y;
       manContainer.creep = man;
       manContainer.addChild(man);
-      man.x = man.pivot.x * scaleX;
-      man.y = man.pivot.y * scaleY;
+      man.x = man.pivot.x * state.scaleX;
+      man.y = man.pivot.y * state.scaleY;
       const graphics = new PIXI.Graphics();
       graphics.lineStyle(2, 0x000000, 1);
       graphics.beginFill(0x00FF00);
-      graphics.drawRect(0, 0, tileWidth * scaleX * 0.5, tileHeight * scaleY * 0.1);
+      graphics.drawRect(0, 0, state.tileWidth * state.scaleX * 0.5, state.tileHeight * state.scaleY * 0.1);
       graphics.endFill();
       manContainer.addChild(graphics);
       graphics.x = graphics.width * 0.5;
-      graphics.y = -scaleY;
+      graphics.y = -state.scaleY;
       state.creeps.push(manContainer);
       state.container.addChild(manContainer);
   }
@@ -168,8 +198,12 @@ function main() {
 
   const state = {
     width: width,
-    height: height
+    height: height,
   };
+
+  getVars(state);
+
+  getClasses(state);
 
   const app = new PIXI.Application({
       width: width, height: height, backgroundColor: 0x1099bb, resolution: window.devicePixelRatio || 1,
